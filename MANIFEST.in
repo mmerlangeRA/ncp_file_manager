@@ -1,0 +1,20 @@
+# Include the README and license files
+include README.md
+include LICENSE*
+
+# Include the blob storage structure template
+include blob_storage_structure_template.json
+
+# Include any other configuration files
+include *.toml
+include *.cfg
+include *.ini
+
+# Exclude unnecessary files
+exclude .env*
+exclude .git*
+exclude Dockerfile*
+exclude docker-compose*
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store

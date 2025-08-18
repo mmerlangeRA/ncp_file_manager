@@ -1,0 +1,45 @@
+# Core Azure dependencies
+azure-storage-blob==12.25.1
+azure-core==1.34.0
+azure-identity==1.23.0
+
+# Web framework and server
+gunicorn==23.0.0
+
+# Data validation and serialization
+pydantic==2.11.7
+
+# Environment configuration
+python-dotenv==1.1.1
+
+# HTTP requests
+requests==2.32.4
+
+# Utilities
+numpy==2.3.1
+psutil==7.0.0
+
+# Development and debugging tools
+debugpy==1.8.14
+objprint==0.3.0
+viztracer==0.15.6
+vizplugins==0.1.3
+
+# Core dependencies (automatically installed with above packages)
+annotated-types==0.7.0
+certifi==2025.7.14
+cffi==1.17.1
+charset-normalizer==3.4.2
+cryptography==45.0.5
+idna==3.10
+isodate==0.7.2
+msal==1.32.3
+msal-extensions==1.3.1
+orjson==3.10.7
+packaging==25.0
+pycparser==2.22
+pydantic_core==2.33.2
+PyJWT==2.10.1
+six==1.17.0
+typing_extensions==4.14.1
+urllib3==2.5.0

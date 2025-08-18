@@ -1,0 +1,47 @@
+{
+  "calibration_video": "calibrations/{camera_id}/{video_blob}",
+  "network_prefix": "{network_slot}/",
+  "record_prefix": "{network_slot}/records/{record_slot}/",
+  "container_raw": {
+    "name": "{container_raw_name}",
+    "sas_url": "{container_raw_sas_url}",
+    "videos": [],
+    "gps_device_path": ""
+  },
+  "container_extracted": {
+    "name": "{container_extracted_name}",
+    "sas_url": "{container_extracted_sas_url}",
+    "frame_prefix": "frames/",
+    "ncp_result_blobs":{
+      "ncp_trajectory_path": "ncp_trajectory.csv",
+      "ncp_gps_frames_path": "ncp_gps_frames.json",
+      "ncp_gyro_path": "ncp_gyro.csv",
+      "ncp_grav_path": "ncp_grav.csv",
+      "ncp_accel_path": "ncp_accel.csv"
+    },
+    "l2r_result_blobs":{
+      "l2r_trajectory": "l2r_trajectory.csv",
+      "l2r_result": "l2r_result.json",
+      "l2r_vpng": "l2r_vpng.vpng"
+    }
+
+  },
+  "container_processed": {
+    "name": "{container_processed_name}",
+    "sas_url": "{container_processed_sas_url}",
+    "frame_prefix": "frames/",
+    "equirect_prefix": "equirects/",
+    "ncp_result_blobs":{
+      "ncp_trajectory_path": "ncp_trajectory.csv",
+      "ncp_gps_frames_path": "ncp_gps_frames.json",
+      "ncp_gyro_path": "ncp_gyro.csv",
+      "ncp_grav_path": "ncp_grav.csv",
+      "ncp_accel_path": "ncp_accel.csv"
+    },
+    "l2r_result_blobs":{
+      "l2r_trajectory": "l2r_trajectory.csv",
+      "l2r_result": "l2r_result.json",
+      "l2r_vpng": "l2r_vpng.vpng"
+    }
+  }
+}

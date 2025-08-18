@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "logiroad-ncp-file-manager"
+version = "0.1.0"
+description = "A file manager for LogiRoad data on Azure Blob Storage"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "LogiRoad", email = "contact@logiroad.com"}
+]
+keywords = ["azure", "blob-storage", "file-manager", "logiroad"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Filesystems",
+]
+
+dependencies = [
+    "azure-storage-blob==12.25.1",
+    "azure-core==1.34.0",
+    "azure-identity==1.23.0",
+    "pydantic==2.11.7",
+    "python-dotenv==1.1.1",
+    "requests==2.32.4",
+    "numpy==2.3.1",
+    "psutil==7.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "debugpy==1.8.14",
+    "objprint==0.3.0",
+    "viztracer==0.15.6",
+    "vizplugins==0.1.3",
+]
+server = [
+    "gunicorn==23.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/mmerlangeRA/ncp_file_manager"
+Repository = "https://github.com/mmerlangeRA/ncp_file_manager"
+Issues = "https://github.com/mmerlangeRA/ncp_file_manager/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.txt"]
