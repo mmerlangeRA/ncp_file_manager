@@ -2,9 +2,6 @@
 include README.md
 include LICENSE*
 
-# Include the blob storage structure template
-include blob_storage_structure_template.json
-
 # Include any other configuration files
 include *.toml
 include *.cfg

@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-default_blob_storage_structure_template_path = "../blob_storage_structure_template.json"
+default_blob_storage_structure_template_path = "blob_storage_structure_template.json"
 
 AZURE_ACCOUNT_NAME=os.getenv("AZURE_ACCOUNT_NAME")
 AZURE_ACCOUNT_KEY=os.getenv("AZURE_ACCOUNT_KEY")
