@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
-print("version is 0.1.1")
+print("version is 0.1.2")
 default_blob_storage_structure_template_path = "blob_storage_structure_template.json"
 
 AZURE_ACCOUNT_NAME=os.getenv("AZURE_ACCOUNT_NAME")
