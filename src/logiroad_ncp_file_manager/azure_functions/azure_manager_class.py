@@ -21,7 +21,7 @@ class AzureManager(NCPFileManager):
 
     def __init__(self, blob_storage_structure:BlobStorageStructure | dict, instance_id:str,use_record_dir=True):
         super().__init__(blob_storage_structure, instance_id, use_record_dir)
-        self.blob_storage_client = AzureStorageClient.get_instance()
+        self.blobStorageClient = AzureStorageClient.get_instance()
 
     def get_downloaded_blob_name(self, blob_name:str, download_directory:str=None)->str:
         prefix_to_remove= self.record_prefix + '/'
@@ -59,7 +59,7 @@ class AzureManager(NCPFileManager):
         """
         if download_directory=="":
             download_directory=self.input_dir
-        sas_url = self.blob_storage_structure.get_container(container_type).sas_url
+        sas_url = self.blobStorageStructure.get_container(container_type).sas_url
         return download_blobs_in_parallel(sas_url, blob_names, download_directory,max_workers=max_workers, prefix_to_remove=prefix_to_remove)
 
     def _download_blobs_with_prefix_parallel(self, container_type:ContainerTypeEnum, prefix:str, download_directory:str="")->List[str]:
@@ -75,7 +75,7 @@ class AzureManager(NCPFileManager):
         """
         if download_directory=="":
             download_directory=self.input_dir
-        sas_url = self.blob_storage_structure.get_container(container_type).sas_url
+        sas_url = self.blobStorageStructure.get_container(container_type).sas_url
         return download_files_with_prefix_parallel(sas_url, prefix, download_directory)
     
     def _download_blob(self, container_type:ContainerTypeEnum,blob_name:str, download_directory:str="", remove_prefix=True)-> str:
@@ -117,8 +117,8 @@ class AzureManager(NCPFileManager):
 
     
     def upload_file_to_cloud_record_directory(self,container_type:ContainerTypeEnum,file_path:str, blob_name:str, sas_url:str)->str:
-        sas_url = self.blob_storage_structure.get_container(container_type=container_type).sas_url
-        blob_path = self.blob_storage_structure.get_cloud_blob_path_with_record_prefix(blob_name=blob_name)
+        sas_url = self.blobStorageStructure.get_container(container_type=container_type).sas_url
+        blob_path = self.blobStorageStructure.get_cloud_blob_path_with_record_prefix(blob_name=blob_name)
         return upload_file_to_azure(file_path, blob_path, sas_url)
     
     def upload_folder_to_cloud_parallel(self, container_type:ContainerTypeEnum,local_folder_path:str, output_blob_prefix:str, remove_files:bool = False)->List[str]:
@@ -133,7 +133,7 @@ class AzureManager(NCPFileManager):
         Returns:
             List[str]: list of blob names.
         """
-        write_sas_url = self.blob_storage_structure.get_container(container_type).sas_url
+        write_sas_url = self.blobStorageStructure.get_container(container_type).sas_url
         return upload_folder_to_azure_parallel(local_folder_path,output_blob_prefix, write_sas_url,remove=remove_files)
     
     def upload_record_folder_to_cloud_parallel(self, container_type:ContainerTypeEnum,local_folder_path:str,blob_prefix="",remove_files:bool = False)-> List[str]:
@@ -147,11 +147,11 @@ class AzureManager(NCPFileManager):
         Returns:
             List[str]: list of blob names.
         """
-        output_blob_prefix= self.blob_storage_structure.record_prefix
+        output_blob_prefix= self.blobStorageStructure.record_prefix
         output_blob_prefix=os.path.join(output_blob_prefix, blob_prefix).replace("\\","/")
         return self.upload_folder_to_cloud_parallel(container_type=container_type,local_folder_path=local_folder_path,output_blob_prefix=output_blob_prefix,remove_files=remove_files)
     
-    def upload_record_file_to_cloud(self, container_type:ContainerTypeEnum,file_to_upload_path:str, blob_name:str, remove_file:bool = False)-> List[str]:
+    def upload_record_file_to_cloud(self, container_type:ContainerTypeEnum,file_to_upload_path:str, blob_name:str, remove_file:bool = False)-> str:
         """Uploads a single record file to Azure.
         
         Args:
@@ -161,13 +161,11 @@ class AzureManager(NCPFileManager):
             remove_file (bool, optional): Whether to remove the local file after upload. Defaults to False.
             
         Returns:
-            List[str]: list of blob names.
+            str:  blob name.
         """
-        sas_url = self.blob_storage_structure.get_container(container_type).sas_url
+        sas_url = self.blobStorageStructure.get_container(container_type).sas_url
         blob_name= upload_file_to_azure(file_to_upload_path, self.record_prefix+blob_name, sas_url, remove=remove_file)
         return blob_name
-      
-
 
     def get_list_of_blob_names(self, container_type:ContainerTypeEnum, prefix:str="", extensions:List[str]=[])-> List[str]:
         """Gets a list of blob names from the specified container with a given prefix and extensions.
@@ -181,7 +179,7 @@ class AzureManager(NCPFileManager):
             List[str]: A list of blob names.
         """
 
-        sas_url = self.blob_storage_structure.get_container(container_type).sas_url
+        sas_url = self.blobStorageStructure.get_container(container_type).sas_url
         
         container_client = ContainerClient.from_container_url(
             container_url=sas_url
@@ -206,8 +204,8 @@ class AzureManager(NCPFileManager):
         Returns:
             List[str]: A list of frame blob names.
         """
-        relative_frame_prefix = self.blob_storage_structure.get_frame_directory_prefix(container_type=container_type)
-        frame_prefix = self.blob_storage_structure.get_cloud_blob_path_with_record_prefix(relative_frame_prefix)
+        relative_frame_prefix = self.blobStorageStructure.get_frame_directory_prefix(container_type=container_type)
+        frame_prefix = self.blobStorageStructure.get_cloud_blob_path_with_record_prefix(relative_frame_prefix)
         blob_list = self.get_list_of_blob_names(container_type, frame_prefix, allowed_image_extensions)
         if not blob_name_should_include_text:
             return blob_list
@@ -228,8 +226,8 @@ class AzureManager(NCPFileManager):
         Returns:
             List[str]: A list of cubemap blob names.
         """
-        relative_frame_prefix = self.blob_storage_structure.get_frame_directory_prefix(container_type=container_type)
-        frame_prefix = self.blob_storage_structure.get_cloud_blob_path_with_record_prefix(relative_frame_prefix)
+        relative_frame_prefix = self.blobStorageStructure.get_frame_directory_prefix(container_type=container_type)
+        frame_prefix = self.blobStorageStructure.get_cloud_blob_path_with_record_prefix(relative_frame_prefix)
         blob_list= self.get_list_of_blob_names(container_type, frame_prefix, allowed_image_extensions)
         blob_names = [
             blob_name
@@ -247,8 +245,8 @@ class AzureManager(NCPFileManager):
         Returns:
             List[str]: A list of equirectangular blob names.
         """
-        relative_equirect_prefix = self.blob_storage_structure.get_equirect_directory_prefix(container_type=container_type)
-        equirect_prefix = self.blob_storage_structure.get_cloud_blob_path_with_record_prefix(relative_equirect_prefix)
+        relative_equirect_prefix = self.blobStorageStructure.get_equirect_directory_prefix(container_type=container_type)
+        equirect_prefix = self.blobStorageStructure.get_cloud_blob_path_with_record_prefix(relative_equirect_prefix)
         blob_list= self.get_list_of_blob_names(container_type, equirect_prefix, allowed_image_extensions)
         blob_names = [
             blob_name
@@ -258,10 +256,11 @@ class AzureManager(NCPFileManager):
         return blob_names
     
     def check_blob_exists(self, container:ContainerBase,blob_name:str)->bool:
-        return self.azure_storage_Client.check_blob_exists(container.name,blob_name)
+        return self.blobStorageClient.check_blob_exists(container.name,blob_name)
     
     def get_blob_size(self,container:ContainerBase,blob_name:str)->int:
-        container_client = self.azure_storage_Client.get_container_client(container_name=container.name)
+        blob_storage_client : AzureStorageClient = self.blobStorageClient
+        container_client = blob_storage_client.get_container_client(container_name=container.name)
         blob_client = container_client.get_blob_client(blob_name)
         properties = blob_client.get_blob_properties()
         return properties.size

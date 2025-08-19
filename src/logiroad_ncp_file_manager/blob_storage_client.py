@@ -105,7 +105,7 @@ class BlobStorageClient(ABC):
         pass
 
     @abstractmethod
-    def change_blob_access_tier(self, container_name: str, blob_name: str, access_tier: str) -> None:
+    def change_blob_access_tier(self, container_name: str, blob_name: str, access_tier: str) -> bool:
         """
         Change the access tier of a blob in the specified container.
 

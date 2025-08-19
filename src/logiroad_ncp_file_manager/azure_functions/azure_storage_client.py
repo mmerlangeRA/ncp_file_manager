@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
 import logging
+from typing import List
 from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions, generate_container_sas, ContainerSasPermissions, ContainerClient, StandardBlobTier
-
+from azure.core.pipeline.transport import HttpRequest
 from ..blob_storage_client import BlobStorageClient
 from ..settings import *
 
@@ -292,3 +293,4 @@ class AzureStorageClient(BlobStorageClient):
         except Exception as e:
             logger.error(f"Failed to change access tier for blob '{blob_name}' in container '{container_name}': {str(e)}")
             return False
+

@@ -20,8 +20,8 @@ def get_temp_dir(instanceId: str):
 
 class NCPFileManager(ABC):
     """Manages Cloud blob storage operations for a given record."""
-    blob_storage_structure:BlobStorageStructure
-    blob_storage_client:BlobStorageClient
+    blobStorageStructure:BlobStorageStructure
+    blobStorageClient:BlobStorageClient
     tmp_dir = ""
     input_dir = ""
     output_dir = ""
@@ -45,16 +45,20 @@ class NCPFileManager(ABC):
             use_record_dir (bool, optional): Whether to use the record prefix in the temp dir. Defaults to True.
         """
         if isinstance(_blob_storage_structure, dict):
-            self.blob_storage_structure: BlobStorageStructure = BlobStorageStructure(**_blob_storage_structure)
+            blob_storage_structure: BlobStorageStructure = BlobStorageStructure(**_blob_storage_structure)
         else:
-            self.blob_storage_structure: BlobStorageStructure = _blob_storage_structure
+            blob_storage_structure: BlobStorageStructure = _blob_storage_structure
+        
+        self.blobStorageStructure: BlobStorageStructure = blob_storage_structure
+        
         if use_record_dir:
-            self.tmp_dir = os.path.join(get_temp_dir(instance_id),self.blob_storage_structure.record_prefix)
+            self.tmp_dir = os.path.join(get_temp_dir(instance_id),self.blobStorageStructure.record_prefix)
         else: 
             self.tmp_dir = get_temp_dir(instance_id)
+            
         self.input_dir = os.path.join(self.tmp_dir, "input")
         self.output_dir = os.path.join(self.tmp_dir, "output")
-        self.record_prefix = self.blob_storage_structure.record_prefix
+        self.record_prefix = blob_storage_structure.record_prefix
         
         # let's specify default values for these local paths. They could be overriden if needed
         self.downloaded_frame_dir = os.path.join(self.input_dir, "frames")
@@ -65,7 +69,7 @@ class NCPFileManager(ABC):
         self.processed_l2r_results = {}
         self.downloaded_ncp_results = {}
         self.l2r_results_blob_names = {}
-        container_extracted = self.blob_storage_structure.container_extracted
+        container_extracted = blob_storage_structure.container_extracted
         if container_extracted:
             for result_file in NCP_ResultFile:
                 self.processed_ncp_results[result_file] = os.path.join(self.input_dir, container_extracted.ncp_result_blobs[result_file.value])
@@ -146,7 +150,7 @@ class NCPFileManager(ABC):
             download_directory (str, optional): The directory to download the blobs to. Defaults to the input directory.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the download, and any error messages.
+            List[str]: list of downloaded paths
         """
         pass
     
@@ -160,7 +164,7 @@ class NCPFileManager(ABC):
             download_directory (str, optional): The directory to download the files to. Defaults to the input directory.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the download, and any error messages.
+            List[str]: list of downloaded file paths.
         """
         pass
     
@@ -193,11 +197,11 @@ class NCPFileManager(ABC):
         pass
     
     @abstractmethod
-    def upload_file_to_cloud_record_directory(self,container_type:ContainerTypeEnum,file_path:str, blob_name:str, sas_url:str)-> Tuple[bool, Dict, str]:
+    def upload_file_to_cloud_record_directory(self,container_type:ContainerTypeEnum,file_path:str, blob_name:str, sas_url:str)-> str:
         pass
     
     @abstractmethod
-    def upload_folder_to_cloud_parallel(self, container_type:ContainerTypeEnum,local_folder_path:str, output_blob_prefix:str, remove_files:bool = False)-> Tuple[bool, Dict, str]:
+    def upload_folder_to_cloud_parallel(self, container_type:ContainerTypeEnum,local_folder_path:str, output_blob_prefix:str, remove_files:bool = False)-> List[str]:
         """Uploads a local folder to Cloud in parallel.
         
         Args:
@@ -207,12 +211,12 @@ class NCPFileManager(ABC):
             remove_files (bool, optional): Whether to remove the local files after upload. Defaults to False.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and any error messages.
+            List[str]: list of blob names.
         """
         pass
     
     @abstractmethod
-    def upload_record_folder_to_cloud_parallel(self, container_type:ContainerTypeEnum,local_folder_path:str,blob_prefix="",remove_files:bool = False)-> Tuple[bool, Dict, str]:
+    def upload_record_folder_to_cloud_parallel(self, container_type:ContainerTypeEnum,local_folder_path:str,blob_prefix="",remove_files:bool = False)-> List[str]:
         """Uploads a local folder to Cloud in parallel. We add the record prefix to the blob name
         
         Args:
@@ -221,12 +225,12 @@ class NCPFileManager(ABC):
             remove_files (bool, optional): Whether to remove the local files after upload. Defaults to False.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and any error messages.
+            List[str]: list of blob names.
         """
         pass
     
     @abstractmethod
-    def upload_record_file_to_cloud(self, container_type:ContainerTypeEnum,file_to_upload_path:str, blob_name:str, remove_file:bool = False)-> Tuple[bool, Dict, str]:
+    def upload_record_file_to_cloud(self, container_type:ContainerTypeEnum,file_to_upload_path:str, blob_name:str, remove_file:bool = False)-> str:
         """Uploads a single record file to Cloud.
         
         Args:
@@ -236,13 +240,13 @@ class NCPFileManager(ABC):
             remove_file (bool, optional): Whether to remove the local file after upload. Defaults to False.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and the name of the blob.
+            str:  blob name.
         """
         pass
     
     def download_ncp_result_file(self,container_type:ContainerTypeEnum, result_file:NCP_ResultFile)->str:
-        file_name = self.blob_storage_structure.get_NCP_result_blob(container_type=container_type, ncp_result=result_file)
-        container_blob_name = self.blob_storage_structure.get_cloud_blob_path_with_record_prefix(file_name)
+        file_name = self.blobStorageStructure.get_NCP_result_blob(container_type=container_type, ncp_result=result_file)
+        container_blob_name = self.blobStorageStructure.get_cloud_blob_path_with_record_prefix(file_name)
         downloaded_path= self._download_blob(container_type, container_blob_name, self.input_dir)
         self.downloaded_ncp_results[result_file]= downloaded_path
         return downloaded_path
@@ -254,10 +258,10 @@ class NCPFileManager(ABC):
             container_type (ContainerTypeEnum): The type of container to download from.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the download, and any error messages.
+            List[str]: list of frame paths.
         """
-        frame_prefix = self.blob_storage_structure.get_frame_directory_prefix(container_type=container_type)
-        blob_directory_prefix = self.blob_storage_structure.get_cloud_blob_path_with_record_prefix(frame_prefix)
+        frame_prefix = self.blobStorageStructure.get_frame_directory_prefix(container_type=container_type)
+        blob_directory_prefix = self.blobStorageStructure.get_cloud_blob_path_with_record_prefix(frame_prefix)
         downloaded_paths= self._download_blobs_with_prefix_parallel(container_type= container_type, prefix=blob_directory_prefix,download_directory= self.downloaded_frame_dir)
         return downloaded_paths
     
@@ -268,13 +272,13 @@ class NCPFileManager(ABC):
             container_type (ContainerTypeEnum): The type of container to download from.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the download, and any error messages.
+            List[str]: list of frame paths.
         """
-        equirect_prefix = self.blob_storage_structure.get_equirect_directory_prefix(container_type=container_type)
+        equirect_prefix = self.blobStorageStructure.get_equirect_directory_prefix(container_type=container_type)
         downloaded_paths= self._download_blobs_with_prefix_parallel(container_type, equirect_prefix, self.downloaded_equirect_dir)
         return downloaded_paths
     
-    def upload_downloaded_ncp_result_file(self, container_type:ContainerTypeEnum, ncp_result:NCP_ResultFile)-> Tuple[bool, Dict, str]:
+    def upload_downloaded_ncp_result_file(self, container_type:ContainerTypeEnum, ncp_result:NCP_ResultFile)-> str:
         """Uploads the downloaded result file to the specified container.
 
         Args:
@@ -282,12 +286,12 @@ class NCPFileManager(ABC):
             ncp_result (ResultFile): The result file to upload.
 
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and the name of the blob.
+            str:  blob name.
         """
-        relative_blob_name = self.blob_storage_structure.get_NCP_result_blob(container_type=container_type,ncp_result=ncp_result)
+        relative_blob_name = self.blobStorageStructure.get_NCP_result_blob(container_type=container_type,ncp_result=ncp_result)
         return self.upload_record_file_to_cloud(container_type, self.downloaded_ncp_results[ncp_result], relative_blob_name)
     
-    def upload_processed_ncp_result_file(self, container_type:ContainerTypeEnum, ncp_result:NCP_ResultFile)-> Tuple[bool, Dict, str]:
+    def upload_processed_ncp_result_file(self, container_type:ContainerTypeEnum, ncp_result:NCP_ResultFile)-> str:
         """Uploads the processed L2R result file to the specified container.
         
         Args:
@@ -295,13 +299,13 @@ class NCPFileManager(ABC):
             ncp_result (NCP_ResultFile): the type of ncp result to upload
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and the name of the blob.
+            str:  blob name.
         """
-        ncp_result_path = self.blob_storage_structure.get_NCP_result_blob(container_type=container_type, ncp_result= ncp_result)
+        ncp_result_path = self.blobStorageStructure.get_NCP_result_blob(container_type=container_type, ncp_result= ncp_result)
         processed_path = self.processed_ncp_results[ncp_result]
         return self.upload_record_file_to_cloud(container_type, processed_path, ncp_result_path)
     
-    def upload_processed_ncp_imu(self, container_type:ContainerTypeEnum, imu_file_path:str, target_blob_name)-> Tuple[bool, Dict, str]:
+    def upload_processed_ncp_imu(self, container_type:ContainerTypeEnum, imu_file_path:str, target_blob_name)-> str:
         """Uploads the processed NCP IMU data to the specified container.
         
         Args:
@@ -310,11 +314,11 @@ class NCPFileManager(ABC):
             target_blob_name (str): The name of the target blob.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and the name of the blob.
+            str:  blob name.
         """
         return self.upload_record_file_to_cloud(container_type, file_to_upload_path=imu_file_path,blob_name=target_blob_name )
     
-    def upload_processed_l2r_result_file(self, container_type:ContainerTypeEnum, l2r_result:L2R_ResultFile)-> Tuple[bool, Dict, str]:
+    def upload_processed_l2r_result_file(self, container_type:ContainerTypeEnum, l2r_result:L2R_ResultFile)-> str:
         """Uploads the processed L2R result file to the specified container.
         
         Args:
@@ -322,25 +326,25 @@ class NCPFileManager(ABC):
             l2r_result (L2R_ResultFile): the type of L2R result to upload
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and the name of the blob.
+            str: A tuple containing the success status, details of the upload, and the name of the blob.
         """
         l2r_blob_name = self.l2r_results_blob_names[l2r_result]
         processed_path = self.processed_l2r_results[l2r_result]
         return self.upload_record_file_to_cloud(container_type, processed_path, l2r_blob_name)
     
-    def upload_downloaded_frames(self, container_type:ContainerTypeEnum)-> Tuple[bool, Dict, str]:
+    def upload_downloaded_frames(self, container_type:ContainerTypeEnum)-> List[str]:
         """Uploads the downloaded frames to the specified container.
         
         Args:
             container_type (ContainerTypeEnum): The type of container to upload to.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and any error messages.
+            List[str]: the uploaded blob names.
         """
-        frame_prefix = self.blob_storage_structure.get_frame_directory_prefix(container_type=container_type)
+        frame_prefix = self.blobStorageStructure.get_frame_directory_prefix(container_type=container_type)
         return self.upload_folder_to_cloud_parallel(container_type, self.downloaded_frame_dir, frame_prefix)
     
-    def upload_processed_frames(self, container_type:ContainerTypeEnum, local_dir:str=None)-> Tuple[bool, Dict, str]:
+    def upload_processed_frames(self, container_type:ContainerTypeEnum, local_dir:str=None)-> List[str]:
         """Uploads the processed frames to the specified container.
         
         Args:
@@ -348,27 +352,28 @@ class NCPFileManager(ABC):
             local_dir (str, optional): The local directory containing the frames. Defaults to the processed frames directory.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and any error messages.
+            List[str]: list of blob names
         """
-        frame_prefix = self.blob_storage_structure.get_frame_directory_prefix(container_type=container_type)
+        frame_prefix = self.blobStorageStructure.get_frame_directory_prefix(container_type=container_type)
         
         if local_dir is None or local_dir=="":
             local_dir = self.processed_frame_dir
         return self.upload_record_folder_to_cloud_parallel(container_type=container_type,local_folder_path= local_dir,blob_prefix=frame_prefix)
 
-    def upload_downloaded_equirects(self, container_type:ContainerTypeEnum)-> Tuple[bool, Dict, str]:
+    def upload_downloaded_equirects(self, container_type:ContainerTypeEnum)-> List[str]:
         """Uploads the downloaded equirectangular frames to the specified container.
         
         Args:
             container_type (ContainerTypeEnum): The type of container to upload to.
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and any error messages.
+            List[str]: list of uploaded blob names.
         """
-        equirect_prefix = self.blob_storage_structure.get_equirect_directory_prefix(container_type)
+        blobStorageStructure: BlobStorageStructure = self.blobStorageStructure
+        equirect_prefix =blobStorageStructure.get_equirect_directory_prefix(container_type)
         return self.upload_record_folder_to_cloud_parallel.json(container_type, self.downloaded_equirect_dir, equirect_prefix)
     
-    def upload_processed_equirects(self, container_type:ContainerTypeEnum,extra_prefix="")-> Tuple[bool, Dict, str]:
+    def upload_processed_equirects(self, container_type:ContainerTypeEnum,extra_prefix="")-> List[str]:
         """Uploads the processed equirectangular frames to the specified container.
         
         Args:
@@ -376,9 +381,10 @@ class NCPFileManager(ABC):
             extra_prefix (str, optional): An extra prefix to add to the blob path. Defaults to "".
             
         Returns:
-            Tuple[bool, Dict, str]: A tuple containing the success status, details of the upload, and any error messages.
+            List[str]:list of uploaded blob names.
         """
-        equirect_prefix = self.blob_storage_structure.get_equirect_directory_prefix(container_type)
+        blobStorageStructure: BlobStorageStructure = self.blobStorageStructure
+        equirect_prefix = blobStorageStructure.get_equirect_directory_prefix(container_type)
         equirect_prefix = os.path.join(extra_prefix, equirect_prefix)
         return self.upload_record_folder_to_cloud_parallel(container_type, self.processed_equirect_dir, equirect_prefix)
 
@@ -443,7 +449,7 @@ class NCPFileManager(ABC):
             raise Exception("record not found in passed blob_storage_structure")
         
         container_name = blob_storage_structure.get_container(container_type).name
-        self.blob_storage_client.delete_blobs_by_prefix(container_name=container_name, prefix=record_prefix)
+        self.blobStorageClient.delete_blobs_by_prefix(container_name=container_name, prefix=record_prefix)
 
     def delete_all_files_in_all_containers_for_record(self, record:Record)->bool:
         for container_type in ContainerTypeEnum:
@@ -459,15 +465,15 @@ class NCPFileManager(ABC):
             int: The number of blobs submitted for deletion.
         """
         
-        record_prefix = self.blob_storage_structure.record_prefix
+        record_prefix = self.blobStorageStructure.record_prefix
         container: ContainerBase = None
 
         if container_type == ContainerTypeEnum.RAW:
-            container = self.blob_storage_structure.container_raw
+            container = self.blobStorageStructure.container_raw
         elif container_type == ContainerTypeEnum.EXTRACTED:
-            container = self.blob_storage_structure.container_extracted
+            container = self.blobStorageStructure.container_extracted
         elif container_type == ContainerTypeEnum.PROCESSED:
-            container = self.blob_storage_structure.container_processed
+            container = self.blobStorageStructure.container_processed
         else:
             # Should not happen if ContainerTypeEnum is used correctly
             raise ValueError(f"Invalid container_type: {container_type}")
@@ -479,7 +485,7 @@ class NCPFileManager(ABC):
         logger.info(f"Attempting to delete files with prefix '{record_prefix}' in container '{container.name}' of type '{container_type.value}'.")
         
         # Use the batch delete method from AzureStorageClient
-        deleted_count = self.blob_storage_client.delete_blobs_by_prefix(
+        deleted_count = self.blobStorageClient.delete_blobs_by_prefix(
             container_name=container.name,
             prefix=record_prefix
         )
